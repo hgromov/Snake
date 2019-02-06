@@ -111,6 +111,7 @@ displayScore.innerHTML = `score: ${score}`;
 // game logic
 let direction = 'right';
 let tic = false;
+let turbo = false;
 // motion cycle
 function move() {
   let snakeCoords = [snakeBody[0].getAttribute('posX'), snakeBody[0].getAttribute('posY')];
@@ -156,9 +157,6 @@ function move() {
 
     if(score !== 0 && (score%10 == 0)) {
     	createMegaPoint();
-    	delay -= 1;
-		setTimeout(move, delay);
-		displayDelay.innerHTML = `movement delay: ${delay}`;
     }
   }
 
@@ -184,14 +182,14 @@ function move() {
 	    displayScore.innerHTML = `score: ${score}`;
 
 	    if(score !== 0 && (score%10 == 0)) {
-			createMegaPoint();
-		}
+        createMegaPoint();
+      }
 	  }
   }
 
   // if snake dies: alerting score counter and restarting the game
   if (snakeBody[0].classList.contains('snakeBody')) {
-  	setTimeout(alert(`GAME OVER\nYour score: ${score}`),10)
+    console.log(`GAME OVER\nYou score: ${score}`);
     score = 0;
     displayScore.innerHTML = `score: ${score}`;
     for(let i = 0; i < len; i++) {
@@ -204,16 +202,18 @@ function move() {
     setTimeout(move, delay);
   }
 
+  if (turbo == true) {
+    delay /= 2;
+  } else {
+    delay = 150 - (5*Math.floor(score/2))
+  }
+
   drawSnake();
   tic = true;
   setTimeout(move, delay);
 }
 
 let delay = 150;
-let displayDelay = document.createElement('div');
-displayDelay.classList.add('delay');
-document.body.appendChild(displayDelay);
-displayDelay.innerHTML = `movement delay: ${delay}`;
 setTimeout(move, delay);
 
 window.addEventListener('keydown', function (e) {
@@ -230,6 +230,13 @@ window.addEventListener('keydown', function (e) {
     } else if (e.keyCode == 40 && direction != 'up') {
       direction = 'down';
       tic = false;
+    }
+  }
+  if (e.keyCode == 32) {
+    if(turbo == false) {
+      turbo = true;
+    } else {
+      turbo = false;
     }
   }
 })
