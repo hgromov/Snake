@@ -43,46 +43,75 @@ const snake = function() {
 
 let snakeBody = snake();
 
-function drowSnake() {
+function drawSnake() {
   snakeBody[0].classList.add('snakeHead');
   for(let i = 1; i<snakeBody.length; i++) {
     snakeBody[i].classList.add('snakeBody');
   }
 }
-drowSnake();
+drawSnake();
 
 // init food for snake
 let point;
+let megaPoint;
 
 function createPoint() {
-  function drowPoint() {
+  function drawPoint() {
     let pointCoords = randCoords(1);
     point = document.querySelector(`[posX='${pointCoords[0]}'][posY='${pointCoords[1]}']`);
   }
-  drowPoint();
+  drawPoint();
 
   // apple shouldn't spawn inside snake
   while(point.classList.contains('snakeBody')) {
-    drowPoint();
+    drawPoint();
     clearInterval(interval);
-    setInterval(move, count);
+    setInterval(move, delay);
   }
 
   point.classList.add('point');
 }
-
 createPoint();
 
-let direction = 'right';
-let tic = false;
+function createMegaPoint() {
+  function drawMegaPoint() {
+    let pointCoords = randCoords(1);
+    megaPoint = [
+    document.querySelector(`[posX='${pointCoords[0]}'][posY='${pointCoords[1]}']`),
+    document.querySelector(`[posX='${pointCoords[0]}'][posY='${(pointCoords[1]+1)}']`),
+    document.querySelector(`[posX='${(pointCoords[0]+1)}'][posY='${pointCoords[1]}']`),
+    document.querySelector(`[posX='${(pointCoords[0]+1)}'][posY='${(pointCoords[1]+1)}']`)
+    ];
+  }
+  drawMegaPoint();
 
+  // apple shouldn't spawn inside snake
+  while(megaPoint[0].classList.contains('snakeBody')||
+  		megaPoint[1].classList.contains('snakeBody')||
+  		megaPoint[2].classList.contains('snakeBody')||
+  		megaPoint[3].classList.contains('snakeBody')) {
+    drawMegaPoint();
+    clearInterval(interval);
+    setInterval(move, delay);
+  }
+
+  megaPoint[0].classList.add('point');
+  megaPoint[1].classList.add('point');
+  megaPoint[2].classList.add('point');
+  megaPoint[3].classList.add('point');
+}
+
+// score counter
+let score = 0;
 let displayScore = document.createElement('div');
 displayScore.classList.add('score');
 document.body.appendChild(displayScore);
-let score = 0;
 displayScore.innerHTML = `score: ${score}`;
 
-// movement logic
+// game logic
+let direction = 'right';
+let tic = false;
+// motion cycle
 function move() {
   let snakeCoords = [snakeBody[0].getAttribute('posX'), snakeBody[0].getAttribute('posY')];
   snakeBody[0].classList.remove('snakeHead');
@@ -124,29 +153,68 @@ function move() {
     createPoint();
     score++;
     displayScore.innerHTML = `score: ${score}`;
+
+    if(score !== 0 && (score%10 == 0)) {
+    	createMegaPoint();
+    	delay -= 1;
+		setTimeout(move, delay);
+		displayDelay.innerHTML = `movement delay: ${delay}`;
+    }
+  }
+
+  // if snake ate an big apple
+  if(megaPoint != undefined) {
+	  if (snakeBody[0].getAttribute('posX') == megaPoint[0].getAttribute('posX') && snakeBody[0].getAttribute('posY') == megaPoint[0].getAttribute('posY') ||
+	  	  snakeBody[0].getAttribute('posX') == megaPoint[1].getAttribute('posX') && snakeBody[0].getAttribute('posY') == megaPoint[1].getAttribute('posY') ||
+	  	  snakeBody[0].getAttribute('posX') == megaPoint[2].getAttribute('posX') && snakeBody[0].getAttribute('posY') == megaPoint[2].getAttribute('posY') ||
+	  	  snakeBody[0].getAttribute('posX') == megaPoint[3].getAttribute('posX') && snakeBody[0].getAttribute('posY') == megaPoint[3].getAttribute('posY')) {
+	    
+	    megaPoint[0].classList.remove('point');
+	    megaPoint[1].classList.remove('point');
+	    megaPoint[2].classList.remove('point');
+	    megaPoint[3].classList.remove('point');
+
+	    let x = snakeBody[snakeBody.length - 1].getAttribute('posX');
+	    let y = snakeBody[snakeBody.length - 1].getAttribute('posY');
+	    snakeBody.push(document.querySelector(`[posX = '${x}'][posY = '${y}']`));
+	    snakeBody.push(document.querySelector(`[posX = '${x}'][posY = '${y}']`));
+	    snakeBody.push(document.querySelector(`[posX = '${x}'][posY = '${y}']`));
+	    snakeBody.push(document.querySelector(`[posX = '${x}'][posY = '${y}']`));
+	    score += 2;
+	    displayScore.innerHTML = `score: ${score}`;
+
+	    if(score !== 0 && (score%10 == 0)) {
+			createMegaPoint();
+		}
+	  }
   }
 
   // if snake dies: alerting score counter and restarting the game
   if (snakeBody[0].classList.contains('snakeBody')) {
   	setTimeout(alert(`GAME OVER\nYour score: ${score}`),10)
-    clearInterval(interval);
     score = 0;
+    displayScore.innerHTML = `score: ${score}`;
     for(let i = 0; i < len; i++) {
       cell[i].classList.remove('snakeBody');
       cell[i].classList.remove('snakeHead');
     }
-    snakeBody = new Snake;
-    drowSnake();
-    count = 100;
-    setInterval(move, count);
+    snakeBody = new snake();
+    drawSnake();
+    delay = 150;
+    setTimeout(move, delay);
   }
 
-  drowSnake();
+  drawSnake();
   tic = true;
+  setTimeout(move, delay);
 }
 
-let count = 100;
-let interval = setInterval(move, count);
+let delay = 150;
+let displayDelay = document.createElement('div');
+displayDelay.classList.add('delay');
+document.body.appendChild(displayDelay);
+displayDelay.innerHTML = `movement delay: ${delay}`;
+setTimeout(move, delay);
 
 window.addEventListener('keydown', function (e) {
   if (tic == true) {

@@ -30,12 +30,15 @@ body {
 
 .point {
     background: red;
-    border-radius: 50%;
 }
 
 .score {
     width: 100px;
-    margin: 20px auto;
+    font-size: 20px;
+    display: block;
+}
+.delay {
+    width: 200px;
     font-size: 20px;
     display: block;
 }
